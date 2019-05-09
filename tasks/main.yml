@@ -1,0 +1,95 @@
+---
+- include: preflight.yml
+
+- name: Create the Process Exporter group
+  become: true
+  group:
+    name: "{{ __process_exporter_group }}"
+    state: present
+    system: true
+
+- name: Create the Process Exporter user
+  become: true
+  user:
+    name: "{{ __process_exporter_user }}"
+    groups: "{{ __process_exporter_group }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    createhome: false
+    home: /
+
+- name: Create Process Exporter configuration directory
+  become: true
+  file:
+    path: "{{ process_exporter_config_dir }}"
+    state: directory
+    owner: root
+    group: "{{ __process_exporter_group }}"
+    mode: 0770
+
+- name: Download process_exporter binary to local folder
+  get_url:
+    url: "https://github.com/ncabatoff/process-exporter/releases/download/v{{ process_exporter_version }}/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}.tar.gz"
+    dest: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}.tar.gz"
+    checksum: "sha256:{{ __process_exporter_checksum }}"
+  register: _download_binary
+  until: _download_binary is succeeded
+  retries: 5
+  delay: 2
+  delegate_to: localhost
+  check_mode: false
+
+- name: Unpack process_exporter binary
+  unarchive:
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}.tar.gz"
+    dest: "/tmp"
+    creates: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}/process-exporter"
+  delegate_to: localhost
+  check_mode: false
+
+- name: Propagate process-exporter binaries
+  become: true
+  copy:
+    src: "/tmp/process-exporter-{{ process_exporter_version }}.linux-{{ go_arch_map[ansible_architecture] | default(ansible_architecture) }}/process-exporter"
+    dest: "/usr/local/bin/process-exporter"
+    mode: 0755
+    owner: root
+    group: root
+  notify:
+    - restart process exporter
+
+- name: Configure Process Exporter
+  become: true
+#  template:
+  copy:
+#    src: "{{ process_exporter_config_file_template }}"
+    src: "{{ process_exporter_config_file }}"
+    dest: "{{ process_exporter_config_dir }}/{{ process_exporter_config_file }}"
+    force: true
+    owner: root
+    group: "{{ __process_exporter_group }}"
+    mode: 0640
+  notify:
+    - restart process exporter
+
+
+  when: not ansible_check_mode
+- name: Copy the process-exporter systemd service file
+  become: true
+  template:
+    src: process-exporter.service.j2
+    dest: /etc/systemd/system/process-exporter.service
+    owner: root
+    group: root
+    mode: 0644
+  no_log: true
+  notify:
+    - restart process exporter
+
+- name: Ensure process-exporter is enabled on boot
+  become: true
+  systemd:
+    name: process-exporter
+    state: started
+    enabled: true

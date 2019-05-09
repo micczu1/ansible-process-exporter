@@ -1,0 +1,9 @@
+#
+# Ansible managed file. Be wary of possible overwrites.
+#
+
+---
+process_names:
+  - name: "{{.Comm}}"
+    cmdline:
+    - '.+'

@@ -1,0 +1,7 @@
+---
+- name: "Get checksum for {{ go_arch_map[ansible_architecture] | default(ansible_architecture) }} architecture"
+  set_fact:
+    __process_exporter_checksum: "{{ item.split(' ')[0] }}"
+  with_items:
+    - "{{ lookup('url', 'https://github.com/ncabatoff/process-exporter/releases/download/v' + process_exporter_version + '/process-exporter_' + process_exporter_version + '_checksums.txt', wantlist=True) | list }}"
+  when: "('linux-' + (go_arch_map[ansible_architecture] | default(ansible_architecture)) + '.tar.gz') in item"

@@ -1,0 +1,18 @@
+{{ ansible_managed | comment }}
+
+[Unit]
+Description=Prometheus Process Exporter
+After=network.target
+
+[Service]
+Type=simple
+User={{ __process_exporter_user }}
+Group={{ __process_exporter_group }}
+ExecStart=/usr/local/bin/process-exporter \
+    -config.path {{ process_exporter_config_dir }}/{{ process_exporter_config_file }}
+
+SyslogIdentifier=process-exporter
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
