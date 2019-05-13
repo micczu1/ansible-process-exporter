@@ -3,7 +3,7 @@ go_arch_map:
   i386: '386'
   x86_64: 'amd64'
   aarch64: 'arm64'
-  armv7l: 'armv7'
+  armv7l: 'armv6' # fix - there's no binary release for armv7, but armv6 is compatible
   armv6l: 'armv6'
 
 __process_exporter_user: process-exp
