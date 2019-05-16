@@ -15,7 +15,7 @@ All variables which can be overridden are stored in [defaults/main.yml](defaults
 
 | Name           | Default Value | Description                        |
 | -------------- | ------------- | -----------------------------------|
-| `process_exporter_version` | 0.4.0 | process-exporter package version. |
+| `process_exporter_version` | 0.5.0 | process-exporter package version. |
 | `process_exporter_web_listen_address` | "0.0.0.0:9256" | Address on which process-exporter will listen |
 
 Dependencies
