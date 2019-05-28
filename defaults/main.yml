@@ -2,6 +2,12 @@
 process_exporter_version: 0.5.0
 process_exporter_web_listen_address: "0.0.0.0:9256"
 
-#process_exporter_config_file_template: process-exporter.yml.j2
+process_exporter_config_file_template: process-exporter.yml.j2
 process_exporter_config_file: process-exporter.yml
 process_exporter_config_dir: /etc/process-exporter
+
+process_exporter_process_names: |
+  process_names:
+    - name: "{{ '{{' }}.Comm{{ '}}' }}"
+      cmdline:
+      - '.+'

@@ -61,10 +61,8 @@
 
 - name: Configure Process Exporter
   become: true
-#  template:
-  copy:
-#    src: "{{ process_exporter_config_file_template }}"
-    src: "{{ process_exporter_config_file }}"
+  template:
+    src: "{{ process_exporter_config_file_template }}"
     dest: "{{ process_exporter_config_dir }}/{{ process_exporter_config_file }}"
     force: true
     owner: root
@@ -72,9 +70,8 @@
     mode: 0640
   notify:
     - restart process exporter
+#  when: not ansible_check_mode
 
-
-  when: not ansible_check_mode
 - name: Copy the process-exporter systemd service file
   become: true
   template:
